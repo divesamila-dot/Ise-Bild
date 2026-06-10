@@ -34,7 +34,9 @@ export function SubjectCard({
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.nameLocal}>{nameLocal}</Text>
       <View style={styles.footer}>
-        <Text style={styles.count}>{count} Qs</Text>
+        <Text style={styles.count}>
+          {count > 0 ? `${count} Qs asked` : "Tap to ask"}
+        </Text>
         <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.8)" />
       </View>
     </Pressable>

@@ -10,35 +10,11 @@ import { SubjectCard } from "@/components/SubjectCard";
 import { useStudy } from "@/context/StudyContext";
 import { useColors } from "@/hooks/useColors";
 
-const SUBJECTS = [
-  {
-    name: "Mathematics",
-    nameLocal: "गणित",
-    color: "#7C3AED",
-    icon: "calculator" as const,
-    count: 54,
-  },
-  {
-    name: "Science",
-    nameLocal: "विज्ञान",
-    color: "#06B6D4",
-    icon: "flask" as const,
-    count: 41,
-  },
-  {
-    name: "English",
-    nameLocal: "अंग्रेज़ी",
-    color: "#F97316",
-    icon: "book" as const,
-    count: 29,
-  },
-  {
-    name: "Social Studies",
-    nameLocal: "सामाजिक",
-    color: "#10B981",
-    icon: "globe" as const,
-    count: 18,
-  },
+const SUBJECT_META = [
+  { name: "Mathematics", nameLocal: "गणित",    color: "#7C3AED", icon: "calculator" as const },
+  { name: "Science",     nameLocal: "विज्ञान",  color: "#06B6D4", icon: "flask"      as const },
+  { name: "English",     nameLocal: "अंग्रेज़ी", color: "#F97316", icon: "book"       as const },
+  { name: "Social Studies", nameLocal: "सामाजिक", color: "#10B981", icon: "globe"   as const },
 ];
 
 const FEATURES = [
@@ -76,6 +52,17 @@ export default function HomeScreen() {
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const recentQuestions = questions.slice(0, 3);
+
+  // Compute real counts per subject from actual questions asked
+  const subjectCounts = questions.reduce<Record<string, number>>((acc, q) => {
+    acc[q.subject] = (acc[q.subject] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const SUBJECTS = SUBJECT_META.map((s) => ({
+    ...s,
+    count: subjectCounts[s.name] ?? 0,
+  }));
 
   return (
     <ScrollView
