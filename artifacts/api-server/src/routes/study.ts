@@ -3,7 +3,6 @@ import { logger } from "../lib/logger";
 
 const router = Router();
 
-const OPENROUTER_API_KEY = process.env["OPENROUTER_API_KEY"];
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const MODEL = "google/gemini-2.0-flash-001";
 
@@ -19,6 +18,7 @@ router.post("/study/ask", async (req, res) => {
     return;
   }
 
+  const OPENROUTER_API_KEY = process.env["OPENROUTER_API_KEY"];
   if (!OPENROUTER_API_KEY) {
     res.status(500).json({ error: "OPENROUTER_API_KEY is not configured" });
     return;
