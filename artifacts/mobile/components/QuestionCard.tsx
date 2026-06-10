@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StepAnswer } from "@/components/StepAnswer";
 import { useColors } from "@/hooks/useColors";
 import type { Question } from "@/context/StudyContext";
 
@@ -79,10 +80,8 @@ export function QuestionCard({
       </Text>
 
       {expanded && (
-        <View style={[styles.answerBox, { backgroundColor: colors.muted }]}>
-          <Text style={[styles.answer, { color: colors.foreground }]}>
-            {question.answer}
-          </Text>
+        <View style={[styles.answerBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <StepAnswer answer={question.answer} subjectColor={subjectColor} />
         </View>
       )}
 
@@ -135,14 +134,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   answerBox: {
-    borderRadius: 10,
-    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
     marginTop: 4,
-  },
-  answer: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 20,
   },
   time: {
     fontSize: 10,

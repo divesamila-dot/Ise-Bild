@@ -32,12 +32,27 @@ router.post("/study/ask", async (req, res) => {
 
   const systemPrompt = `You are an expert AI study assistant for students. ${subjectContext}${langInstruction}
 
-Provide a clear, step-by-step explanation suitable for students. Structure your answer with:
-1. A brief direct answer
-2. Step-by-step explanation
-3. Key points to remember
+ALWAYS format your answer EXACTLY like this structure (no markdown bold, no asterisks):
 
-Keep the answer concise but thorough. Use simple language.`;
+Here's a step-by-step breakdown:
+
+Step 1: [first step or concept]
+Step 2: [second step or concept]
+Step 3: [third step or concept]
+(add more steps if needed)
+
+Key Points:
+- [important thing to remember]
+- [another key point]
+
+The Answer is: [final concise answer or conclusion]
+
+Rules:
+- Use "Step N:" prefix (not numbers alone) for every step
+- Keep each step short and clear — one idea per step
+- End with "The Answer is:" followed by the final answer
+- No markdown symbols like **, *, #
+- Simple words a student can understand`;
 
   try {
     const openrouterRes = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {

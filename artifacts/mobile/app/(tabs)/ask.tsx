@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StepAnswer } from "@/components/StepAnswer";
 import { useStudy, type Question } from "@/context/StudyContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -247,7 +248,7 @@ export default function AskScreen() {
 
           <View style={[styles.answerDivider, { backgroundColor: colors.border }]} />
 
-          <Text style={[styles.answerText, { color: colors.foreground }]}>{result.answer}</Text>
+          <StepAnswer answer={result.answer} subjectColor={subjectColor} />
 
           <Pressable
             onPress={() => {
