@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -13,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStudy, type Question } from "@/context/StudyContext";
 import { useColors } from "@/hooks/useColors";
@@ -53,23 +53,32 @@ export default function AskScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setError(null);
     setResult(null);
-    const res = await askQuestion(questionText.trim(), selectedSubject, language);
-    if (res) {
-      setResult(res);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } else {
-      setError("Could not get an answer. Please check your connection.");
+    try {
+      const res = await askQuestion(questionText.trim(), selectedSubject, language);
+      if (res) {
+        setResult(res);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Could not get an answer. Please try again.";
+      setError(msg);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
   const subjectColor = SUBJECT_COLORS[selectedSubject] ?? "#6B7280";
 
   return (
-    <KeyboardAwareScrollView
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
+    <ScrollView
       style={[styles.scroll, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingTop: topPad + 8, paddingBottom: 100 }]}
+      contentContainerStyle={[styles.content, { paddingTop: topPad + 8, paddingBottom: 120 }]}
       keyboardShouldPersistTaps="handled"
-      bottomOffset={20}
+      showsVerticalScrollIndicator={false}
     >
       <Text style={[styles.pageTitle, { color: colors.foreground }]}>Ask a Question</Text>
       <Text style={[styles.pageSub, { color: colors.mutedForeground }]}>
@@ -253,7 +262,8 @@ export default function AskScreen() {
           </Pressable>
         </View>
       )}
-    </KeyboardAwareScrollView>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

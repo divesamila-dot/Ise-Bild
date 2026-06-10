@@ -77,6 +77,20 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [streak]);
 
+  const fetchWithTimeout = useCallback(
+    async (url: string, options: RequestInit, timeoutMs = 30000): Promise<Response> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        return res;
+      } finally {
+        clearTimeout(timer);
+      }
+    },
+    []
+  );
+
   const askQuestion = useCallback(
     async (
       question: string,
@@ -84,16 +98,30 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       language: "en" | "hi"
     ): Promise<Question | null> => {
       setIsAsking(true);
+      const domain = process.env["EXPO_PUBLIC_DOMAIN"];
+      const baseUrl = domain ? `https://${domain}` : "";
+      const url = `${baseUrl}/api/study/ask`;
+      const body = JSON.stringify({ question, subject, language });
+      const headers = { "Content-Type": "application/json" };
+
+      const attemptFetch = async (): Promise<{ answer: string; subject: string }> => {
+        const res = await fetchWithTimeout(url, { method: "POST", headers, body });
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          throw new Error(`API ${res.status}: ${errText}`);
+        }
+        return res.json() as Promise<{ answer: string; subject: string }>;
+      };
+
       try {
-        const domain = process.env["EXPO_PUBLIC_DOMAIN"];
-        const baseUrl = domain ? `https://${domain}` : "";
-        const res = await fetch(`${baseUrl}/api/study/ask`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question, subject, language }),
-        });
-        if (!res.ok) throw new Error("API error");
-        const data = (await res.json()) as { answer: string; subject: string };
+        let data: { answer: string; subject: string };
+        try {
+          data = await attemptFetch();
+        } catch (firstErr) {
+          // Retry once after 1.5s
+          await new Promise((r) => setTimeout(r, 1500));
+          data = await attemptFetch();
+        }
 
         const newQ: Question = {
           id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
@@ -121,13 +149,17 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 
         await updateStreak();
         return newQ;
-      } catch {
-        return null;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("aborted") || msg.includes("abort")) {
+          throw new Error("Request timed out. Please try again.");
+        }
+        throw new Error("Could not reach the server. Please check your connection.");
       } finally {
         setIsAsking(false);
       }
     },
-    [questions.length, badges, persist, updateStreak]
+    [questions.length, badges, persist, updateStreak, fetchWithTimeout]
   );
 
   const toggleSave = useCallback(
