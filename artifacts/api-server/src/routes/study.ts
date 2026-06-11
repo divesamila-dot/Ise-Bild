@@ -3,8 +3,8 @@ import { logger } from "../lib/logger";
 
 const router = Router();
 
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-const MODEL = "google/gemini-2.0-flash-001";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MODEL = "llama-3.1-8b-instant";
 
 router.post("/study/ask", async (req, res) => {
   const { question, subject, language } = req.body as {
@@ -18,9 +18,9 @@ router.post("/study/ask", async (req, res) => {
     return;
   }
 
-  const OPENROUTER_API_KEY = process.env["OPENROUTER_API_KEY"];
-  if (!OPENROUTER_API_KEY) {
-    res.status(500).json({ error: "OPENROUTER_API_KEY is not configured" });
+  const GROQ_API_KEY = process.env["GROQ_API_KEY"];
+  if (!GROQ_API_KEY) {
+    res.status(500).json({ error: "GROQ_API_KEY is not configured" });
     return;
   }
 
@@ -55,13 +55,14 @@ Rules:
 - Simple words a student can understand`;
 
   try {
-    const openrouterRes = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30000);
+
+    const r = await fetch(GROQ_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://replit.com",
-        "X-Title": "AIStudyHelper",
       },
       body: JSON.stringify({
         model: MODEL,
@@ -70,24 +71,26 @@ Rules:
           { role: "user", content: question.trim() },
         ],
         max_tokens: 1024,
+        temperature: 0.7,
       }),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timer));
 
-    if (!openrouterRes.ok) {
-      const errText = await openrouterRes.text();
-      logger.error({ status: openrouterRes.status, errText }, "OpenRouter error");
+    if (!r.ok) {
+      const errText = await r.text();
+      logger.error({ status: r.status, errText }, "Groq error");
       res.status(502).json({ error: "AI service error" });
       return;
     }
 
-    const data = (await openrouterRes.json()) as {
+    const data = (await r.json()) as {
       choices: { message: { content: string } }[];
     };
 
     const answer = data.choices?.[0]?.message?.content ?? "";
-    res.json({ answer, subject: subject ?? "General" });
+    res.json({ answer: answer.trim(), subject: subject ?? "General" });
   } catch (err) {
-    logger.error({ err }, "OpenRouter fetch failed");
+    logger.error({ err }, "Groq fetch failed");
     res.status(500).json({ error: "Failed to get AI answer" });
   }
 });
