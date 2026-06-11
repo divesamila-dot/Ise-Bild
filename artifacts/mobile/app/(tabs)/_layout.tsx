@@ -3,7 +3,7 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 import { useColors } from "@/hooks/useColors";
@@ -26,6 +26,10 @@ function NativeTabLayout() {
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
         <Label>Profile</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <Icon sf={{ default: "gearshape", selected: "gearshape.fill" }} />
+        <Label>Settings</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -69,11 +73,7 @@ function ClassicTabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="house" tintColor={color} size={24} />
-            ) : (
-              <Ionicons name="home" size={22} color={color} />
-            ),
+            isIOS ? <SymbolView name="house" tintColor={color} size={24} /> : <Ionicons name="home" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -81,11 +81,7 @@ function ClassicTabLayout() {
         options={{
           title: "Ask",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="paperplane" tintColor={color} size={24} />
-            ) : (
-              <Ionicons name="send" size={20} color={color} />
-            ),
+            isIOS ? <SymbolView name="paperplane" tintColor={color} size={24} /> : <Ionicons name="send" size={20} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -93,11 +89,7 @@ function ClassicTabLayout() {
         options={{
           title: "Saved",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="bookmark" tintColor={color} size={24} />
-            ) : (
-              <Ionicons name="bookmark" size={22} color={color} />
-            ),
+            isIOS ? <SymbolView name="bookmark" tintColor={color} size={24} /> : <Ionicons name="bookmark" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -105,11 +97,15 @@ function ClassicTabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="person" tintColor={color} size={24} />
-            ) : (
-              <Ionicons name="person" size={22} color={color} />
-            ),
+            isIOS ? <SymbolView name="person" tintColor={color} size={24} /> : <Ionicons name="person" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color }) =>
+            isIOS ? <SymbolView name="gearshape" tintColor={color} size={24} /> : <Ionicons name="settings" size={22} color={color} />,
         }}
       />
     </Tabs>
@@ -117,8 +113,6 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
-    return <NativeTabLayout />;
-  }
+  if (isLiquidGlassAvailable()) return <NativeTabLayout />;
   return <ClassicTabLayout />;
 }

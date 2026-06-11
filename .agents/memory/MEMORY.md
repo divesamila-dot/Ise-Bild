@@ -1,0 +1,2 @@
+- [Groq API key flow](groq-key-flow.md) — user enters key in Settings → AsyncStorage → X-Groq-Key header → server falls back to env; same key for AI + OCR
+- [OCR via Groq Vision](ocr-groq-vision.md) — use meta-llama/llama-4-scout-17b-16e-instruct; base64 image in request body; Express body limit must be 8mb
