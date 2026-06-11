@@ -39,7 +39,7 @@ export default function AskScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { subject: paramSubject } = useLocalSearchParams<{ subject?: string }>();
-  const { askQuestion, scanImage, isAsking, toggleSave, apiKey } = useStudy();
+  const { askQuestion, scanImage, isAsking, toggleSave, apiKey, serverReady } = useStudy();
 
   const [selectedSubject, setSelectedSubject] = useState(paramSubject ?? "Mathematics");
   const [language, setLanguage] = useState<"en" | "hi">("en");
@@ -308,8 +308,8 @@ export default function AskScreen() {
           )}
         </TouchableOpacity>
 
-        {/* No API key warning */}
-        {!apiKey && (
+        {/* No API key warning — only show if neither local key nor server key is set */}
+        {!apiKey && !serverReady && (
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/settings")}
             style={[styles.noKeyBanner, { backgroundColor: "#FEF3C7", borderColor: "#FDE68A" }]}

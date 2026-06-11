@@ -18,6 +18,7 @@ interface StudyContextValue {
   badges: number;
   isAsking: boolean;
   apiKey: string;
+  serverReady: boolean;
   setApiKey: (key: string) => Promise<void>;
   askQuestion: (question: string, subject: string, language: "en" | "hi", deep?: boolean) => Promise<Question | null>;
   scanImage: (base64: string, mimeType: string) => Promise<string>;
@@ -39,6 +40,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
   const [badges, setBadges] = useState(0);
   const [isAsking, setIsAsking] = useState(false);
   const [apiKey, setApiKeyState] = useState("");
+  const [serverReady, setServerReady] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -53,6 +55,15 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         if (rawStreak) setStreak(parseInt(rawStreak, 10));
         if (rawBadges) setBadges(parseInt(rawBadges, 10));
         if (rawKey) setApiKeyState(rawKey);
+      } catch {}
+      try {
+        const domain = process.env["EXPO_PUBLIC_DOMAIN"];
+        const base = domain ? `https://${domain}` : "";
+        const r = await fetch(`${base}/api/study/status`);
+        if (r.ok) {
+          const data = await r.json() as { ready: boolean };
+          setServerReady(data.ready);
+        }
       } catch {}
     })();
   }, []);
@@ -197,7 +208,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StudyContext.Provider
-      value={{ questions, savedQuestions, streak, badges, isAsking, apiKey, setApiKey, askQuestion, scanImage, toggleSave, deleteQuestion }}
+      value={{ questions, savedQuestions, streak, badges, isAsking, apiKey, serverReady, setApiKey, askQuestion, scanImage, toggleSave, deleteQuestion }}
     >
       {children}
     </StudyContext.Provider>

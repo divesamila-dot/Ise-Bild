@@ -41,6 +41,12 @@ async function groqChat(
   }
 }
 
+// ── GET /api/study/status ──────────────────────────────────────────────────
+router.get("/study/status", (req, res) => {
+  const hasKey = !!(req.headers["x-groq-key"] || process.env["GROQ_API_KEY"]);
+  res.json({ ready: hasKey });
+});
+
 // ── POST /api/study/ask ─────────────────────────────────────────────────────
 router.post("/study/ask", async (req, res) => {
   const { question, subject, language, deep } = req.body as {
