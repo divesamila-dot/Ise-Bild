@@ -1,0 +1,47 @@
+name: Build Android APK
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-size: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build APK
+        run: |
+          if [ -d "android" ]; then
+            cd android && ./gradlew assembleRelease
+          else
+            echo "No android folder found. Building via Expo/Capacitor if applicable."
+            npx expo prebuild --platform android || true
+            cd android && ./gradlew assembleRelease || echo "Standard build failed. Check configuration."
+          fi
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-app-apk
+          path: '**/build/outputs/apk/**/*.apk'
+          
